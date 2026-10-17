@@ -1,0 +1,85 @@
+---
+import { getEntry, render } from 'astro:content';
+import MainLayout from '../../../layouts/MainLayout.astro';
+import AddToCart from '../../../components/AddToCart.vue';
+import CourseProgress from '../../../components/CourseProgress.vue';
+import { getCourseDetails, lessonSlug, toCartItem } from '../../../lib/courses';
+import { getEnrolled } from '../../../lib/enrollment';
+import { formatDate, formatMinutes, formatNumber, formatPrice, levelLabels } from '../../../lib/format';
+
+// SSR: وضعیت ثبت‌نام کاربر از session خوانده می‌شود
+export const prerender = false;
+
+const course = await getEntry('courses', Astro.params.slug!);
+if (!course) return new Response(null, { status: 404 });
+
+const { instructor, lessons, minutes } = await getCourseDetails(course);
+const { Content } = await render(course);
+const enrolled = (await getEnrolled(Astro.session)).includes(course.id);
+---
+<MainLayout title={course.data.title} description={course.data.summary}>
+  <a href="/courses" class="text-sm text-muted hover:text-ink">بازگشت به دوره‌ها</a>
+
+  <div class="mt-4 grid gap-10 md:grid-cols-[1fr_20rem]">
+    <div>
+      <h1 class="font-display text-4xl leading-tight sm:text-5xl" transition:name={`title-${course.id}`}>
+        {course.data.title}
+      </h1>
+      <p class="mt-4 text-lg text-muted">{course.data.summary}</p>
+
+      <div class="prose prose-lg mt-8 max-w-none prose-headings:font-bold prose-a:text-firoozeh-dark prose-code:before:content-none prose-code:after:content-none">
+        <Content />
+      </div>
+
+      <h2 class="mt-12 font-display text-3xl">سرفصل‌ها</h2>
+      <ol class="mt-4 divide-y divide-line rounded-2xl border border-line bg-white">
+        {lessons.map((lesson) => {
+          const open = enrolled || lesson.data.free;
+          return (
+            <li>
+              <a
+                href={`/courses/${course.id}/${lessonSlug(lesson)}`}
+                class="flex items-center gap-4 px-5 py-4 hover:bg-paper/60"
+              >
+                <span class="grid size-8 shrink-0 place-items-center rounded-full border border-line tabular-nums">
+                  {formatNumber(lesson.data.order)}
+                </span>
+                <span class="flex-1 font-medium">{lesson.data.title}</span>
+                <span class="text-sm text-muted">{formatMinutes(lesson.data.minutes)}</span>
+                {!open && <span class="text-sm text-muted" aria-label="قفل">🔒</span>}
+                {lesson.data.free && !enrolled && (
+                  <span class="rounded bg-saffron-soft px-2 py-0.5 text-xs font-medium text-amber-800">رایگان</span>
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+
+    <aside class="h-fit space-y-6 rounded-2xl border border-line bg-white p-6 md:sticky md:top-24">
+      {enrolled ? (
+        <>
+          <p class="font-semibold text-firoozeh-dark">در این دوره ثبت‌نام کرده‌اید.</p>
+          <CourseProgress client:visible lessonIds={lessons.map((l) => l.id)} />
+        </>
+      ) : (
+        <>
+          <p class="text-2xl font-bold tabular-nums">{formatPrice(course.data.price)}</p>
+          <AddToCart client:load course={toCartItem(course)} />
+        </>
+      )}
+      <dl class="grid grid-cols-2 gap-y-3 border-t border-line pt-5 text-sm">
+        <dt class="text-muted">سطح</dt><dd>{levelLabels[course.data.level]}</dd>
+        <dt class="text-muted">مدت</dt><dd>{formatMinutes(minutes)}</dd>
+        <dt class="text-muted">تعداد درس</dt><dd>{formatNumber(lessons.length)}</dd>
+        <dt class="text-muted">انتشار</dt><dd>{formatDate(course.data.publishedAt)}</dd>
+      </dl>
+      <div class="border-t border-line pt-5">
+        <p class="font-semibold">{instructor.data.name}</p>
+        <p class="text-sm text-muted">{instructor.data.role}</p>
+        <p class="mt-2 text-sm leading-6">{instructor.data.bio}</p>
+      </div>
+    </aside>
+  </div>
+</MainLayout>

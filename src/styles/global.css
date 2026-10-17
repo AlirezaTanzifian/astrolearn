@@ -1,1 +1,42 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Vazirmatn Variable", system-ui, sans-serif;
+  --font-display: "Lalezar", "Vazirmatn Variable", sans-serif;
+
+  --color-paper: #f4f6f5;
+  --color-ink: #14213d;
+  --color-muted: #55636b;
+  --color-line: #d5dedb;
+  --color-firoozeh: #0e7c7b;
+  --color-firoozeh-dark: #0a5f5e;
+  --color-saffron: #f2a93b;
+  --color-saffron-soft: #fdf0d8;
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-feature-settings: "ss01";
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-firoozeh);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@utility girih {
+  /* نوار کاشی هشت‌پر، تنها عنصر تزئینی سایت */
+  background-color: var(--color-firoozeh);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23f2a93b' stroke-width='1.2' opacity='.9'%3E%3Cpath d='M16 4l3.5 8.5L28 16l-8.5 3.5L16 28l-3.5-8.5L4 16l8.5-3.5z'/%3E%3Crect x='10' y='10' width='12' height='12' transform='rotate(45 16 16)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 32px 32px;
+}

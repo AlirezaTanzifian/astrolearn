@@ -1,46 +1,40 @@
-# Astro Starter Kit: Basics
+# AstroLearn
 
-```sh
-npm create astro@latest -- --template basics
-```
+A full-stack mini-course platform (Persian, RTL) built with **Astro (SSR)**, **Vue**, **Tailwind CSS v4** and **Nano Stores**, to demonstrate Islands Architecture and the Content Layer API.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+## What it demonstrates
 
-## 🚀 Project Structure
+| Concept | Where |
+| :-- | :-- |
+| Content Layer: `glob()` and `file()` loaders | `src/content.config.ts` |
+| Collection references (course → instructor, lesson → course) | `src/content.config.ts`, `src/lib/courses.ts` |
+| Static prerendering | `/` and `/cart` |
+| On-demand SSR (`prerender = false`) with query-string filters | `/courses?q=&level=` |
+| Server sessions for enrollment + server-side lesson gating | `src/lib/enrollment.ts`, `/courses/[slug]/[lesson]` |
+| Astro Actions (typed RPC, server-side price validation) | `src/actions/index.ts` |
+| Islands with different hydration: `client:load`, `client:visible`, `client:only` | `src/components/*.vue` |
+| Island persisted across view transitions (`transition:persist`) | Cart badge in `src/layouts/MainLayout.astro` |
+| Shared state between independent islands, persisted to localStorage | `src/store/cart.ts`, `src/store/progress.ts` |
 
-Inside of your Astro project, you'll see the following folders and files:
+## Flow
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+1. Browse courses, open a course and read its free lesson.
+2. Add courses to the cart (the header badge updates; state survives reloads and syncs across tabs).
+3. Check out on `/cart`. The `checkout` action re-prices courses on the server and stores the enrollment in the session.
+4. Locked lessons are now unlocked; mark lessons complete to fill the course progress bar.
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Commands
 
-## 🧞 Commands
+| Command | Action |
+| :-- | :-- |
+| `npm install` | Install dependencies |
+| `npm run dev` | Dev server at `localhost:4321` |
+| `npx astro check` | Type-check `.astro`, `.vue` and `.ts` files |
+| `npm run build` | Build to `./dist/` |
+| `node dist/server/entry.mjs` | Run the production server |
 
-All commands are run from the root of the project, from a terminal:
+## Adding content
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- Course: add `src/content/courses/<id>.md` (frontmatter is validated by the schema).
+- Lessons: add `src/content/lessons/<course-id>/<nn-slug>.md` with `course: <course-id>`.
+- Instructor: add an entry to `src/content/instructors.json`.

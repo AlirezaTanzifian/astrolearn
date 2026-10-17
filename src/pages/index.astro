@@ -1,32 +1,64 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
-import AddToCart from '../components/AddToCart.vue';
-import { getCollection } from 'astro:content';
+import CourseRow from '../components/CourseRow.astro';
+import { getCourseDetails, getCourses, lessonSlug } from '../lib/courses';
+import { formatMinutes, formatNumber } from '../lib/format';
 
-// دریافت تمام دوره‌ها در زمان بیلد/سرور
-const courses = await getCollection('courses');
+// این صفحه در زمان build به HTML ایستا تبدیل می‌شود
+const courses = await getCourses();
+const featured = courses.filter((course) => course.data.featured);
+const spotlight = await getCourseDetails(featured[0] ?? courses[0]);
+const freeLesson = spotlight.lessons.find((lesson) => lesson.data.free) ?? spotlight.lessons[0];
 ---
-
-<MainLayout title="لیست دوره‌ها">
-  <h1 class="text-3xl font-bold mb-6">دوره‌های آموزشی</h1>
-  
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    {courses.map((course) => (
-      <div class="border p-5 rounded-xl bg-white shadow-sm hover:shadow-md transition">
-        <h2 class="text-xl font-bold mb-2">
-          <a href={`/courses/${course.id}`}>{course.data.title}</a>
-        </h2>
-        <p class="text-gray-600 mb-4">مدرس: {course.data.instructor}</p>
-        <div class="flex justify-between items-center">
-          <span class="font-bold text-green-600">{course.data.price} تومان</span>
-          
-          <!-- استفاده از Island Architecture با client:load -->
-          <AddToCart 
-            client:load 
-            course={{ id: course.id, title: course.data.title, price: course.data.price }} 
-          />
-        </div>
+<MainLayout title="یادگیری وب، درس به درس">
+  <section class="grid gap-10 pb-14 md:grid-cols-[1.2fr_1fr] md:items-center">
+    <div>
+      <h1 class="font-display text-5xl leading-[1.3] sm:text-6xl">
+        دوره‌های کوتاه برای ساختن وب سریع‌تر
+      </h1>
+      <p class="mt-5 max-w-md text-lg leading-8 text-muted">
+        هر دوره چند درس کوتاه است که در یک عصر تمام می‌شود. اولین درس هر دوره رایگان است.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="/courses" class="rounded-lg bg-firoozeh px-5 py-3 font-semibold text-white hover:bg-firoozeh-dark">دیدن همه‌ی دوره‌ها</a>
+        <a href={`/courses/${spotlight.course.id}/${lessonSlug(freeLesson)}`} class="rounded-lg border border-line bg-white px-5 py-3 font-semibold hover:border-firoozeh">
+          شروع درس رایگان
+        </a>
       </div>
-    ))}
-  </div>
+    </div>
+
+    <!-- سرفصل یک دوره‌ی واقعی، مستقیم از Content Layer -->
+    <div class="rounded-2xl border border-line bg-white p-6 shadow-[0_1px_0_var(--color-line)]">
+      <p class="text-sm text-muted">سرفصل دوره</p>
+      <h2 class="mt-1 text-lg font-bold">{spotlight.course.data.title}</h2>
+      <ol class="mt-4 space-y-1">
+        {spotlight.lessons.map((lesson) => (
+          <li>
+            <a
+              href={`/courses/${spotlight.course.id}/${lessonSlug(lesson)}`}
+              class="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-paper"
+            >
+              <span class="grid size-7 shrink-0 place-items-center rounded-full border border-line text-sm tabular-nums">
+                {formatNumber(lesson.data.order)}
+              </span>
+              <span class="flex-1">{lesson.data.title}</span>
+              {lesson.data.free
+                ? <span class="rounded bg-saffron-soft px-2 py-0.5 text-xs font-medium text-amber-800">رایگان</span>
+                : <span class="text-xs text-muted">{formatMinutes(lesson.data.minutes)}</span>}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="flex items-baseline justify-between border-b border-line pb-3">
+      <h2 class="font-display text-3xl">دوره‌های پیشنهادی</h2>
+      <a href="/courses" class="text-sm font-medium text-firoozeh-dark hover:underline">همه‌ی دوره‌ها</a>
+    </div>
+    <div class="divide-y divide-line">
+      {featured.map((course) => <CourseRow course={course} />)}
+    </div>
+  </section>
 </MainLayout>

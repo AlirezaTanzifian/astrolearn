@@ -1,0 +1,58 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import CourseRow from '../../components/CourseRow.astro';
+import { getCourses } from '../../lib/courses';
+import { getEnrolled } from '../../lib/enrollment';
+import { levelLabels } from '../../lib/format';
+
+// رندر در لحظه‌ی درخواست: فیلترها از query string خوانده می‌شوند و بدون JS هم کار می‌کنند
+export const prerender = false;
+
+const q = Astro.url.searchParams.get('q')?.trim() ?? '';
+const level = Astro.url.searchParams.get('level') ?? '';
+const all = await getCourses();
+const enrolled = await getEnrolled(Astro.session);
+
+const needle = q.toLowerCase();
+const courses = all.filter(({ data }) => {
+  const matchesText = !needle || [data.title, data.summary, ...data.tags].some((s) => s.toLowerCase().includes(needle));
+  return matchesText && (!level || data.level === level);
+});
+---
+<MainLayout title="همه‌ی دوره‌ها">
+  <h1 class="font-display text-4xl">همه‌ی دوره‌ها</h1>
+
+  <form method="get" class="mt-6 flex flex-wrap gap-3">
+    <label class="flex-1 min-w-56">
+      <span class="sr-only">جستجو</span>
+      <input
+        type="search"
+        name="q"
+        value={q}
+        placeholder="جستجو در عنوان، توضیح یا برچسب…"
+        class="w-full rounded-lg border border-line bg-white px-4 py-2.5 focus:border-firoozeh focus:outline-none"
+      />
+    </label>
+    <label>
+      <span class="sr-only">سطح</span>
+      <select name="level" class="rounded-lg border border-line bg-white px-4 py-2.5">
+        <option value="">همه‌ی سطح‌ها</option>
+        {Object.entries(levelLabels).map(([value, label]) => (
+          <option value={value} selected={value === level}>{label}</option>
+        ))}
+      </select>
+    </label>
+    <button class="rounded-lg bg-ink px-5 py-2.5 font-semibold text-white">فیلتر</button>
+  </form>
+
+  {courses.length ? (
+    <div class="mt-4 divide-y divide-line">
+      {courses.map((course) => <CourseRow course={course} enrolled={enrolled.includes(course.id)} />)}
+    </div>
+  ) : (
+    <div class="mt-10 rounded-2xl border border-dashed border-line bg-white px-6 py-12 text-center">
+      <p class="font-semibold">دوره‌ای با این فیلتر پیدا نشد.</p>
+      <a href="/courses" class="mt-3 inline-block text-firoozeh-dark hover:underline">پاک کردن فیلترها</a>
+    </div>
+  )}
+</MainLayout>

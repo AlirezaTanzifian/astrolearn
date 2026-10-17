@@ -1,22 +1,63 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import '@fontsource-variable/vazirmatn';
+import '@fontsource/lalezar/arabic-400.css';
+import '@fontsource/lalezar/latin-400.css';
 import '../styles/global.css';
-const { title } = Astro.props;
+import CartBadge from '../components/CartBadge.vue';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'دوره‌های کوتاه و کاربردی توسعه‌ی وب به زبان فارسی.' } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/courses', label: 'دوره‌ها' },
+  { href: '/my-courses', label: 'دوره‌های من' },
+];
 ---
 <html lang="fa" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    <title>{title} | AstroLearn</title>
-    <ClientRouter /> <!-- جادوی ترانزیشن‌های استرو -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} | آسترولرن</title>
+    <ClientRouter />
   </head>
-  <body class="bg-gray-50 text-gray-800 p-8 max-w-4xl mx-auto">
-    <header class="flex justify-between items-center mb-12 border-b pb-4">
-      <a href="/" class="text-2xl font-bold text-blue-600">AstroLearn 🚀</a>
-      <!-- اینجا بعداً آیکون سبد خرید را قرار می‌دهیم -->
+  <body class="min-h-dvh flex flex-col font-sans antialiased">
+    <div class="girih h-2" aria-hidden="true"></div>
+    <header class="border-b border-line bg-paper/90 backdrop-blur sticky top-0 z-20">
+      <div class="mx-auto max-w-5xl px-4 h-16 flex items-center gap-3 sm:gap-6">
+        <a href="/" class="font-display text-2xl text-firoozeh-dark leading-none pt-1">آسترولرن</a>
+        <nav class="flex gap-1 text-sm">
+          {nav.map((item) => (
+            <a
+              href={item.href}
+              aria-current={path.startsWith(item.href) ? 'page' : undefined}
+              class="px-2 sm:px-3 py-2 rounded-md text-muted hover:text-ink aria-[current=page]:text-ink aria-[current=page]:font-semibold"
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+        <div class="ms-auto">
+          <!-- جزیره‌ای که بین ناوبری‌ها حفظ می‌شود و دوباره mount نمی‌شود -->
+          <CartBadge client:load transition:persist="cart-badge" />
+        </div>
+      </div>
     </header>
-    
-    <main>
+
+    <main class="flex-1 mx-auto w-full max-w-5xl px-4 py-10">
       <slot />
     </main>
+
+    <footer class="border-t border-line text-sm text-muted">
+      <div class="mx-auto max-w-5xl px-4 py-6">
+        ساخته‌شده با Astro، Vue، Tailwind و Nano Stores.
+      </div>
+    </footer>
   </body>
 </html>
