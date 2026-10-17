@@ -1,0 +1,22 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+const { title } = Astro.props;
+---
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title} | AstroLearn</title>
+    <ClientRouter /> <!-- جادوی ترانزیشن‌های استرو -->
+  </head>
+  <body class="bg-gray-50 text-gray-800 p-8 max-w-4xl mx-auto">
+    <header class="flex justify-between items-center mb-12 border-b pb-4">
+      <a href="/" class="text-2xl font-bold text-blue-600">AstroLearn 🚀</a>
+      <!-- اینجا بعداً آیکون سبد خرید را قرار می‌دهیم -->
+    </header>
+    
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+---
+import MainLayout from '../../layouts/MainLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+// ساخت صفحه برای هر دوره در زمان بیلد
+export async function getStaticPaths() {
+  const courses = await getCollection('courses');
+  return courses.map((course) => ({
+    params: { slug: course.id },
+    props: { course },
+  }));
+}
+
+const { course } = Astro.props;
+
+// رندر کردن محتوای مارک‌داون
+const { Content } = await render(course);
+---
+
+<MainLayout title={course.data.title}>
+  <div class="bg-white p-8 rounded-xl shadow-sm border">
+    <a href="/" class="text-blue-500 text-sm mb-4 inline-block">&larr; بازگشت به لیست</a>
+    
+    <h1 class="text-4xl font-bold mb-4">{course.data.title}</h1>
+    <div class="flex gap-4 text-gray-500 mb-8 border-b pb-4">
+      <span>مدرس: {course.data.instructor}</span>
+      <span>قیمت: {course.data.price} تومان</span>
+    </div>
+    
+    <!-- محتوای فایل MDX/MD اینجا تزریق می‌شود -->
+    <div class="prose max-w-none">
+      <Content />
+    </div>
+  </div>
+</MainLayout>
