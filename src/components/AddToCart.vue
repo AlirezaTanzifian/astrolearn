@@ -1,27 +1,21 @@
 <template>
-  <a
-    v-if="enrolled"
-    :href="`/courses/${course.id}`"
-    class="inline-flex items-center rounded-lg bg-firoozeh/10 px-4 py-2 text-sm font-semibold text-firoozeh-dark"
-  >
+  <a v-if="enrolled" :href="`/courses/${course.id}`" :class="buttonClass('soft', 'sm')">
     ادامه‌ی یادگیری
   </a>
   <button
     v-else-if="inCart"
     type="button"
-    class="inline-flex items-center gap-2 rounded-lg border border-firoozeh px-4 py-2 text-sm font-semibold text-firoozeh-dark hover:bg-firoozeh/5"
+    :class="buttonClass('outline', 'sm')"
     @click="removeFromCart(course.id)"
   >
-    <svg viewBox="0 0 20 20" class="size-4" fill="currentColor" aria-hidden="true">
-      <path d="M8 13.6 4.4 10l1.2-1.2L8 11.2l6.4-6.4 1.2 1.2z" />
-    </svg>
+    <Icon name="check" class="size-4" />
     در سبد خرید
     <span class="sr-only">(برای حذف کلیک کنید)</span>
   </button>
   <button
     v-else
     type="button"
-    class="rounded-lg bg-firoozeh px-4 py-2 text-sm font-semibold text-white hover:bg-firoozeh-dark disabled:opacity-60"
+    :class="buttonClass('primary', 'sm')"
     :disabled="!mounted"
     @click="addToCart(course)"
   >
@@ -32,8 +26,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useStore } from '@nanostores/vue';
+import Icon from './Icon.vue';
 import { addToCart, cart, removeFromCart, type CartItem } from '../store/cart';
 import { useMounted } from '../lib/useMounted';
+import { buttonClass } from '../lib/ui';
 
 const props = defineProps<{ course: CartItem; enrolled?: boolean }>();
 

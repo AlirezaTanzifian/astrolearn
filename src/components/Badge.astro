@@ -1,0 +1,10 @@
+---
+import { badgeClass, type BadgeTone } from '../lib/ui';
+
+interface Props {
+  tone?: BadgeTone;
+}
+
+const { tone } = Astro.props;
+---
+<span class={badgeClass(tone)}><slot /></span>

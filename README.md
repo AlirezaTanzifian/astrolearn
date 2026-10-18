@@ -7,7 +7,7 @@ A full-stack mini-course platform (Persian, RTL) built with **Astro (SSR)**, **V
 | Concept | Where |
 | :-- | :-- |
 | Content Layer: `glob()` and `file()` loaders | `src/content.config.ts` |
-| Collection references (course → instructor, lesson → course) | `src/content.config.ts`, `src/lib/courses.ts` |
+| Collection references (course → instructor, lesson → course) and reverse lookup | `src/lib/courses.ts`, `/instructors/[id]` |
 | Static prerendering | `/` and `/cart` |
 | On-demand SSR (`prerender = false`) with query-string filters | `/courses?q=&level=` |
 | Server sessions for enrollment + server-side lesson gating | `src/lib/enrollment.ts`, `/courses/[slug]/[lesson]` |

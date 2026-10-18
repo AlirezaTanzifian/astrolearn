@@ -1,6 +1,8 @@
 ---
 import MainLayout from '../../layouts/MainLayout.astro';
 import CourseRow from '../../components/CourseRow.astro';
+import Button from '../../components/Button.astro';
+import EmptyState from '../../components/EmptyState.astro';
 import { getCourses } from '../../lib/courses';
 import { getEnrolled } from '../../lib/enrollment';
 import { levelLabels } from '../../lib/format';
@@ -24,25 +26,25 @@ const courses = all.filter(({ data }) => {
 
   <form method="get" class="mt-6 flex flex-wrap gap-3">
     <label class="flex-1 min-w-56">
-      <span class="sr-only">جستجو</span>
+      <span class="sr-only">جستجو در دوره‌ها</span>
       <input
         type="search"
         name="q"
         value={q}
         placeholder="جستجو در عنوان، توضیح یا برچسب…"
-        class="w-full rounded-lg border border-line bg-white px-4 py-2.5 focus:border-firoozeh focus:outline-none"
+        class="w-full min-h-11 rounded-lg border border-line bg-white px-4 py-2.5 focus:border-firoozeh"
       />
     </label>
     <label>
-      <span class="sr-only">سطح</span>
-      <select name="level" class="rounded-lg border border-line bg-white px-4 py-2.5">
+      <span class="sr-only">سطح دوره</span>
+      <select name="level" class="min-h-11 rounded-lg border border-line bg-white px-4 py-2.5">
         <option value="">همه‌ی سطح‌ها</option>
         {Object.entries(levelLabels).map(([value, label]) => (
           <option value={value} selected={value === level}>{label}</option>
         ))}
       </select>
     </label>
-    <button class="rounded-lg bg-ink px-5 py-2.5 font-semibold text-white">فیلتر</button>
+    <Button type="submit" variant="dark">فیلتر</Button>
   </form>
 
   {courses.length ? (
@@ -50,9 +52,12 @@ const courses = all.filter(({ data }) => {
       {courses.map((course) => <CourseRow course={course} enrolled={enrolled.includes(course.id)} />)}
     </div>
   ) : (
-    <div class="mt-10 rounded-2xl border border-dashed border-line bg-white px-6 py-12 text-center">
-      <p class="font-semibold">دوره‌ای با این فیلتر پیدا نشد.</p>
-      <a href="/courses" class="mt-3 inline-block text-firoozeh-dark hover:underline">پاک کردن فیلترها</a>
+    <div class="mt-10">
+      <EmptyState
+        title="دوره‌ای با این فیلتر پیدا نشد"
+        description="عبارت کوتاه‌تری جستجو کنید یا سطح دیگری را انتخاب کنید."
+        action={{ href: '/courses', label: 'پاک کردن فیلترها' }}
+      />
     </div>
   )}
 </MainLayout>

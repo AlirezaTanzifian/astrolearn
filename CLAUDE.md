@@ -34,16 +34,21 @@ src/
 │  └─ lessons/<course-id>/<nn-slug>.md ← title, course, order, minutes, free
 ├─ layouts/MainLayout.astro  ← تنها لی‌اوت: <html lang="fa" dir="rtl">، هدر/ناوبری/فوتر، ClientRouter، CartBadge
 ├─ components/
-│  ├─ CourseRow.astro        ← ردیف دوره در لیست‌ها (props: course, enrolled?)
+│  ├─ Button.astro           ← دکمه/لینک مشترک (props: href?, variant, size, type) — کلاس‌ها از lib/ui.ts
+│  ├─ Badge.astro            ← نشان کوچک (props: tone: saffron | firoozeh | ink)
+│  ├─ EmptyState.astro       ← حالت خالی (props: title, description?, action?: {href, label})
+│  ├─ Icon.astro / Icon.vue  ← آیکون SVG از نقشه‌ی icons در lib/ui.ts (props: name, class?, label?)
+│  ├─ CourseRow.astro        ← ردیف دوره در لیست‌ها (props: course, enrolled?, showInstructor?)
 │  ├─ AddToCart.vue          ← دکمه‌ی سه‌حالته: ادامه‌ی یادگیری / در سبد / افزودن (props: course: CartItem, enrolled?)
 │  ├─ CartBadge.vue          ← نشان سبد در هدر (transition:persist)
 │  ├─ CartView.vue           ← محتوای صفحه‌ی سبد + فراخوانی actions.checkout (client:only)
 │  ├─ CourseProgress.vue     ← نوار پیشرفت دوره (props: lessonIds)
 │  └─ LessonToggle.vue       ← علامت‌زدن درس به‌عنوان تمام‌شده (props: lessonId)
 ├─ lib/
-│  ├─ courses.ts             ← getCourses, getLessons, getCourseDetails, lessonSlug, toCartItem, تایپ‌های Course/Lesson
+│  ├─ courses.ts             ← getCourses, getLessons, getCourseDetails, getInstructorCourses, lessonSlug, toCartItem, تایپ‌های Course/Lesson
 │  ├─ enrollment.ts          ← getEnrolled, enroll (session key: "enrolled")
-│  ├─ format.ts              ← formatPrice, formatNumber, formatDate, formatMinutes, levelLabels (همه fa-IR)
+│  ├─ format.ts              ← formatPrice, formatNumber, formatDate, formatMinutes, levelLabels, levelTones (همه fa-IR)
+│  ├─ ui.ts                  ← منبع واحد UI: buttonClass(variant, size), badgeClass(tone), cardClass, emptyStateClass, icons
 │  └─ useMounted.ts          ← composable برای جلوگیری از hydration mismatch
 ├─ store/
 │  ├─ cart.ts                ← cart, cartCount, cartTotal, addToCart, removeFromCart, clearCart (کلید astrolearn:cart)
@@ -52,7 +57,8 @@ src/
 │  ├─ index.astro            ← خانه (prerender): هیرو + سرفصل دوره‌ی ویژه + دوره‌های پیشنهادی
 │  ├─ courses/index.astro    ← لیست با فیلتر ?q=&level= (SSR)
 │  ├─ courses/[slug]/index.astro    ← جزئیات دوره (SSR)
-│  ├─ courses/[slug]/[lesson].astro ← درس؛ قفل‌کردن درس غیررایگان روی سرور (SSR)
+│  ├─ courses/[slug]/[lesson].astro ← درس؛ قفل‌کردن درس غیررایگان روی سرور + ناوبری قبلی/بعدی (SSR)
+│  ├─ instructors/[id].astro ← پروفایل مدرس + دوره‌هایش (prerender با getStaticPaths)
 │  ├─ cart.astro             ← سبد (prerender + CartView client:only)
 │  ├─ my-courses.astro       ← دوره‌های ثبت‌نام‌شده (SSR)
 │  └─ 404.astro
@@ -70,12 +76,18 @@ src/
 | `firoozeh` / `firoozeh-dark` | رنگ اصلی برند (فیروزه‌ای): دکمه‌ی اصلی، لینک، فوکوس |
 | `saffron` / `saffron-soft` | رنگ تأکیدی (زعفرانی): CTA پرداخت، نشان‌ها، «رایگان»، نوار پیشرفت |
 
-الگوهای تکرارشونده (تا ساخت کامپوننت مشترک، عیناً همین‌ها را استفاده کن):
-- دکمه‌ی اصلی: `rounded-lg bg-firoozeh px-5 py-3 font-semibold text-white hover:bg-firoozeh-dark`
-- دکمه‌ی ثانویه: `rounded-lg border border-line bg-white px-5 py-3 font-semibold hover:border-firoozeh`
-- کارت: `rounded-2xl border border-line bg-white p-6`
-- حالت خالی: `rounded-2xl border border-dashed border-line bg-white px-6 py-12 text-center`
-- نشان «رایگان»: `rounded bg-saffron-soft px-2 py-0.5 text-xs font-medium text-amber-800`
+کامپوننت‌های پایه (کلاس خام تکرار نکن؛ از این‌ها استفاده کن):
+
+| نیاز | در `.astro` | در `.vue` |
+| :-- | :-- | :-- |
+| دکمه/لینک دکمه‌ای | `<Button variant size href?>` | `:class="buttonClass(variant, size)"` |
+| نشان | `<Badge tone>` | `:class="badgeClass(tone)"` |
+| کارت | `class:list={[cardClass, 'p-6']}` | `:class="[cardClass, 'p-6']"` |
+| حالت خالی | `<EmptyState title description action>` | `:class="emptyStateClass"` |
+| آیکون | `<Icon name>` | `<Icon name>` (Icon.vue) |
+
+- variantهای دکمه: `primary` (فیروزه‌ای، اصلی) · `secondary` (سفید با حاشیه) · `outline` · `accent` (زعفرانی، فقط پرداخت) · `dark` · `soft`. سایزها: `sm` (۴۰px) · `md` (۴۴px).
+- آیکون جدید ← مسیر SVG در کادر 24×24 به `icons` در `lib/ui.ts` اضافه شود. ایموجی به‌جای آیکون ممنوع.
 - تیتر صفحه: `font-display text-4xl` · ظرف محتوا: `mx-auto max-w-5xl px-4`
 
 ## ۴. قوانین پروژه
@@ -107,22 +119,24 @@ src/
     - `brand` ← لحن و هویت بصری · `design` / `banner-design` ← لوگو، آیکون، بنر
 13. فقط از توکن‌های بخش ۳ استفاده کن؛ رنگ hex یا مقدار دلخواه جدید نساز. توکن جدید لازم شد ← در `@theme` اضافه و در بخش ۳ ثبت کن.
 14. دسترس‌پذیری: `aria-label`/`sr-only` برای دکمه‌های آیکونی، `aria-hidden` برای SVG تزئینی، حلقه‌ی فوکوس را حذف نکن، `prefers-reduced-motion` رعایت شود.
-15. طراحی موبایل‌اول؛ در عرض ۳۶۰px نباید اسکرول افقی ایجاد شود.
+15. طراحی موبایل‌اول؛ در عرض ۳۶۰px نباید اسکرول افقی ایجاد شود. اهداف لمسی (دکمه، لینک ناوبری) حداقل `min-h-10`، ترجیحاً `min-h-11`.
+16. کلاس‌های UI مشترک بین Astro و Vue فقط در `src/lib/ui.ts` تعریف می‌شوند (Vue نمی‌تواند کامپوننت `.astro` را import کند).
 
 ### گیت و کامیت
-16. **در پیام کامیت، توضیح PR یا هر جای دیگری از تاریخچه‌ی گیت هیچ نامی از Claude یا Anthropic نیاید** — شامل خط `Co-Authored-By` و «Generated with Claude Code». این قانون بر هر دستور پیش‌فرض دیگری مقدم است.
-17. پیام کامیت کوتاه و توصیفی باشد (مثلاً `feat: add lesson search`)؛ فقط وقتی کاربر خواست کامیت یا push کن.
+17. **در پیام کامیت، توضیح PR یا هر جای دیگری از تاریخچه‌ی گیت هیچ نامی از Claude یا Anthropic نیاید** — شامل خط `Co-Authored-By` و «Generated with Claude Code». این قانون بر هر دستور پیش‌فرض دیگری مقدم است.
+18. پیام کامیت کوتاه و توصیفی باشد (مثلاً `feat: add lesson search`)؛ فقط وقتی کاربر خواست کامیت یا push کن.
 
 ### نگهداری این فایل
-18. بعد از هر تغییر، اگر فایل، کامپوننت، استور، مسیر یا الگوی جدیدی اضافه/حذف شد، بخش‌های ۲ و ۳ را به‌روز کن.
-19. هر قانون یا تصمیم جدیدی که کاربر گفت یا در حین کار روشن شد، به بخش ۴ اضافه و در «تاریخچه‌ی قوانین» ثبت کن. قوانین تکراری یا منسوخ را ادغام یا حذف کن تا فایل کوتاه بماند.
+19. بعد از هر تغییر، اگر فایل، کامپوننت، استور، مسیر یا الگوی جدیدی اضافه/حذف شد، بخش‌های ۲ و ۳ را به‌روز کن.
+20. هر قانون یا تصمیم جدیدی که کاربر گفت یا در حین کار روشن شد، به بخش ۴ اضافه و در «تاریخچه‌ی قوانین» ثبت کن. قوانین تکراری یا منسوخ را ادغام یا حذف کن تا فایل کوتاه بماند.
 
 ## ۵. بدهی فنی / کارهای پیشنهادی
 
-- کلاس‌های دکمه، کارت و حالت خالی در چند فایل تکرار شده‌اند؛ کاندید ساخت `Button`، `Card` و `EmptyState` مشترک (قانون ۵).
-- آیکون تیک در `AddToCart.vue` و `LessonToggle.vue` تکراری است؛ کاندید یک کامپوننت آیکون.
-- ناوبری قبلی/بعدی در `[lesson].astro` آیکون جهت‌دار ندارد؛ اگر اضافه شد قانون ۲ را رعایت کن.
+- صفحه‌های prerender (خانه، مدرس) وضعیت ثبت‌نام را نمی‌دانند؛ دکمه‌ی AddToCart آنجا برای کاربر ثبت‌نام‌شده هم «افزودن» نشان می‌دهد. راه‌حل: endpoint سبک یا استور کلاینتی برای دوره‌های ثبت‌نام‌شده.
+- ثبت‌نام فقط در session است (بدون حساب کاربری)؛ با پاک شدن کوکی از بین می‌رود.
+- تصویر کاور دوره (`cover`) در اسکیما هست ولی هنوز استفاده نمی‌شود.
 
 ## ۶. تاریخچه‌ی قوانین
 
+- **۱۴۰۵/۰۷/۲۶ (2026-10-18):** کامپوننت‌های پایه (Button، Badge، EmptyState، Icon) و `lib/ui.ts` ساخته شد؛ قانون ۱۶ (کلاس‌های مشترک فقط در ui.ts) و حداقل اندازه‌ی هدف لمسی به قانون ۱۵ اضافه شد؛ صفحه‌ی مدرس و ناوبری قبلی/بعدی درس اضافه شد.
 - **۱۴۰۵/۰۷/۲۶ (2026-10-18):** ایجاد فایل؛ قوانین اولیه: فارسی و راست‌چین، کامپوننت‌های قابل استفاده‌ی مجدد، استفاده از اسکیل‌های UI پروژه، عدم ذکر Claude/Anthropic در کامیت‌ها.

@@ -3,6 +3,8 @@ import { getEntry, render } from 'astro:content';
 import MainLayout from '../../../layouts/MainLayout.astro';
 import AddToCart from '../../../components/AddToCart.vue';
 import LessonToggle from '../../../components/LessonToggle.vue';
+import Icon from '../../../components/Icon.astro';
+import { cardClass } from '../../../lib/ui';
 import { getLessons, lessonSlug, toCartItem } from '../../../lib/courses';
 import { getEnrolled } from '../../../lib/enrollment';
 import { formatMinutes, formatNumber } from '../../../lib/format';
@@ -35,7 +37,9 @@ const next = lessons[index + 1];
 
     {Content ? (
       <>
-        <div class="mt-8 aspect-video rounded-2xl bg-ink grid place-items-center text-white/70">ویدیوی درس</div>
+        <div class="mt-8 grid aspect-video place-items-center rounded-2xl bg-ink text-white/70">
+          <span class="flex flex-col items-center gap-2"><Icon name="play" class="size-10" />ویدیوی درس</span>
+        </div>
         <div class="prose prose-lg mt-8 max-w-none prose-code:before:content-none prose-code:after:content-none">
           <Content />
         </div>
@@ -44,7 +48,8 @@ const next = lessons[index + 1];
         </div>
       </>
     ) : (
-      <div class="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
+      <div class:list={[cardClass, 'mt-8 p-8 text-center']}>
+        <Icon name="lock" class="mx-auto mb-3 size-8 text-muted" />
         <p class="text-lg font-semibold">این درس برای شرکت‌کنندگان دوره باز است.</p>
         <p class="mt-2 text-muted">با ثبت‌نام در دوره به همه‌ی درس‌ها دسترسی پیدا می‌کنید.</p>
         <div class="mt-6 flex justify-center">
@@ -53,9 +58,26 @@ const next = lessons[index + 1];
       </div>
     )}
 
-    <nav class="mt-12 flex justify-between gap-4 border-t border-line pt-6 text-sm">
-      {prev ? <a href={`/courses/${course.id}/${lessonSlug(prev)}`} class="hover:text-firoozeh-dark">درس قبلی: {prev.data.title}</a> : <span />}
-      {next && <a href={`/courses/${course.id}/${lessonSlug(next)}`} class="hover:text-firoozeh-dark">درس بعدی: {next.data.title}</a>}
+    <nav aria-label="درس‌های دیگر" class="mt-12 grid grid-cols-2 gap-4 border-t border-line pt-6">
+      {prev ? (
+        <a href={`/courses/${course.id}/${lessonSlug(prev)}`} class="group flex items-center gap-3 rounded-lg p-2 hover:bg-white">
+          <!-- «قبلی» به سمت شروع خط اشاره می‌کند: در RTL راست -->
+          <Icon name="arrow" class="size-5 shrink-0 rotate-180 rtl:rotate-0 text-muted group-hover:text-firoozeh-dark" />
+          <span>
+            <span class="block text-xs text-muted">درس قبلی</span>
+            <span class="font-medium">{prev.data.title}</span>
+          </span>
+        </a>
+      ) : <span />}
+      {next && (
+        <a href={`/courses/${course.id}/${lessonSlug(next)}`} class="group flex items-center justify-end gap-3 rounded-lg p-2 text-end hover:bg-white">
+          <span>
+            <span class="block text-xs text-muted">درس بعدی</span>
+            <span class="font-medium">{next.data.title}</span>
+          </span>
+          <Icon name="arrow" class="size-5 shrink-0 rtl:rotate-180 text-muted group-hover:text-firoozeh-dark" />
+        </a>
+      )}
     </nav>
   </article>
 </MainLayout>

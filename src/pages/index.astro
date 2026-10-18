@@ -1,6 +1,9 @@
 ---
 import MainLayout from '../layouts/MainLayout.astro';
 import CourseRow from '../components/CourseRow.astro';
+import Badge from '../components/Badge.astro';
+import Button from '../components/Button.astro';
+import { cardClass } from '../lib/ui';
 import { getCourseDetails, getCourses, lessonSlug } from '../lib/courses';
 import { formatMinutes, formatNumber } from '../lib/format';
 
@@ -20,15 +23,13 @@ const freeLesson = spotlight.lessons.find((lesson) => lesson.data.free) ?? spotl
         هر دوره چند درس کوتاه است که در یک عصر تمام می‌شود. اولین درس هر دوره رایگان است.
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
-        <a href="/courses" class="rounded-lg bg-firoozeh px-5 py-3 font-semibold text-white hover:bg-firoozeh-dark">دیدن همه‌ی دوره‌ها</a>
-        <a href={`/courses/${spotlight.course.id}/${lessonSlug(freeLesson)}`} class="rounded-lg border border-line bg-white px-5 py-3 font-semibold hover:border-firoozeh">
-          شروع درس رایگان
-        </a>
+        <Button href="/courses">دیدن همه‌ی دوره‌ها</Button>
+        <Button href={`/courses/${spotlight.course.id}/${lessonSlug(freeLesson)}`} variant="secondary">شروع درس رایگان</Button>
       </div>
     </div>
 
     <!-- سرفصل یک دوره‌ی واقعی، مستقیم از Content Layer -->
-    <div class="rounded-2xl border border-line bg-white p-6 shadow-[0_1px_0_var(--color-line)]">
+    <div class:list={[cardClass, 'p-6']}>
       <p class="text-sm text-muted">سرفصل دوره</p>
       <h2 class="mt-1 text-lg font-bold">{spotlight.course.data.title}</h2>
       <ol class="mt-4 space-y-1">
@@ -43,7 +44,7 @@ const freeLesson = spotlight.lessons.find((lesson) => lesson.data.free) ?? spotl
               </span>
               <span class="flex-1">{lesson.data.title}</span>
               {lesson.data.free
-                ? <span class="rounded bg-saffron-soft px-2 py-0.5 text-xs font-medium text-amber-800">رایگان</span>
+                ? <Badge>رایگان</Badge>
                 : <span class="text-xs text-muted">{formatMinutes(lesson.data.minutes)}</span>}
             </a>
           </li>

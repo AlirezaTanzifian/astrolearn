@@ -1,3 +1,5 @@
+import type { BadgeTone } from './ui';
+
 const toman = new Intl.NumberFormat('fa-IR');
 const number = new Intl.NumberFormat('fa-IR');
 const date = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long' });
@@ -21,3 +23,9 @@ export const levelLabels = {
 } as const;
 
 export type Level = keyof typeof levelLabels;
+
+export const levelTones = {
+  beginner: 'firoozeh',
+  intermediate: 'saffron',
+  advanced: 'ink',
+} as const satisfies Record<Level, BadgeTone>;

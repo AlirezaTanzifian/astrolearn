@@ -1,0 +1,26 @@
+---
+import { icons, type IconName } from '../lib/ui';
+
+interface Props {
+  name: IconName;
+  class?: string;
+  /** اگر آیکون معنا دارد و متن کناری ندارد، برچسب بده؛ در غیر این صورت تزئینی است */
+  label?: string;
+}
+
+const { name, class: className = 'size-5', label } = Astro.props;
+---
+<svg
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.8"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class={className}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+>
+  <path d={icons[name]} />
+</svg>

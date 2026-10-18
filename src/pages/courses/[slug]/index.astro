@@ -3,6 +3,9 @@ import { getEntry, render } from 'astro:content';
 import MainLayout from '../../../layouts/MainLayout.astro';
 import AddToCart from '../../../components/AddToCart.vue';
 import CourseProgress from '../../../components/CourseProgress.vue';
+import Badge from '../../../components/Badge.astro';
+import Icon from '../../../components/Icon.astro';
+import { cardClass } from '../../../lib/ui';
 import { getCourseDetails, lessonSlug, toCartItem } from '../../../lib/courses';
 import { getEnrolled } from '../../../lib/enrollment';
 import { formatDate, formatMinutes, formatNumber, formatPrice, levelLabels } from '../../../lib/format';
@@ -32,7 +35,7 @@ const enrolled = (await getEnrolled(Astro.session)).includes(course.id);
       </div>
 
       <h2 class="mt-12 font-display text-3xl">سرفصل‌ها</h2>
-      <ol class="mt-4 divide-y divide-line rounded-2xl border border-line bg-white">
+      <ol class:list={[cardClass, 'mt-4 divide-y divide-line']}>
         {lessons.map((lesson) => {
           const open = enrolled || lesson.data.free;
           return (
@@ -46,10 +49,8 @@ const enrolled = (await getEnrolled(Astro.session)).includes(course.id);
                 </span>
                 <span class="flex-1 font-medium">{lesson.data.title}</span>
                 <span class="text-sm text-muted">{formatMinutes(lesson.data.minutes)}</span>
-                {!open && <span class="text-sm text-muted" aria-label="قفل">🔒</span>}
-                {lesson.data.free && !enrolled && (
-                  <span class="rounded bg-saffron-soft px-2 py-0.5 text-xs font-medium text-amber-800">رایگان</span>
-                )}
+                {!open && <Icon name="lock" class="size-4 text-muted" label="قفل؛ نیاز به ثبت‌نام" />}
+                {lesson.data.free && !enrolled && <Badge>رایگان</Badge>}
               </a>
             </li>
           );
@@ -57,7 +58,7 @@ const enrolled = (await getEnrolled(Astro.session)).includes(course.id);
       </ol>
     </div>
 
-    <aside class="h-fit space-y-6 rounded-2xl border border-line bg-white p-6 md:sticky md:top-24">
+    <aside class:list={[cardClass, 'h-fit space-y-6 p-6 md:sticky md:top-24']}>
       {enrolled ? (
         <>
           <p class="font-semibold text-firoozeh-dark">در این دوره ثبت‌نام کرده‌اید.</p>
@@ -76,7 +77,7 @@ const enrolled = (await getEnrolled(Astro.session)).includes(course.id);
         <dt class="text-muted">انتشار</dt><dd>{formatDate(course.data.publishedAt)}</dd>
       </dl>
       <div class="border-t border-line pt-5">
-        <p class="font-semibold">{instructor.data.name}</p>
+        <a href={`/instructors/${instructor.id}`} class="font-semibold hover:text-firoozeh-dark">{instructor.data.name}</a>
         <p class="text-sm text-muted">{instructor.data.role}</p>
         <p class="mt-2 text-sm leading-6">{instructor.data.bio}</p>
       </div>

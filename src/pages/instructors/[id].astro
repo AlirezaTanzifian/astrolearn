@@ -1,0 +1,40 @@
+---
+import { getCollection } from 'astro:content';
+import MainLayout from '../../layouts/MainLayout.astro';
+import CourseRow from '../../components/CourseRow.astro';
+import { getCourseDetails, getInstructorCourses } from '../../lib/courses';
+import { formatMinutes, formatNumber } from '../../lib/format';
+
+// محتوای عمومی و بدون session؛ در زمان build ساخته می‌شود
+export async function getStaticPaths() {
+  const instructors = await getCollection('instructors');
+  return instructors.map((instructor) => ({ params: { id: instructor.id }, props: { instructor } }));
+}
+
+const { instructor } = Astro.props;
+const courses = await getInstructorCourses(instructor.id);
+const details = await Promise.all(courses.map(getCourseDetails));
+const lessonCount = details.reduce((sum, d) => sum + d.lessons.length, 0);
+const minutes = details.reduce((sum, d) => sum + d.minutes, 0);
+const initial = instructor.data.name.charAt(0);
+---
+<MainLayout title={instructor.data.name} description={instructor.data.bio}>
+  <section class="flex flex-col gap-6 border-b border-line pb-10 sm:flex-row sm:items-center">
+    <div class="girih grid size-24 shrink-0 place-items-center rounded-full" aria-hidden="true">
+      <span class="grid size-18 place-items-center rounded-full bg-paper font-display text-4xl text-firoozeh-dark">{initial}</span>
+    </div>
+    <div>
+      <h1 class="font-display text-4xl">{instructor.data.name}</h1>
+      <p class="mt-1 text-muted">{instructor.data.role}</p>
+      <p class="mt-4 max-w-prose leading-8">{instructor.data.bio}</p>
+      <p class="mt-3 text-sm text-muted">
+        {formatNumber(courses.length)} دوره، {formatNumber(lessonCount)} درس، {formatMinutes(minutes)} محتوا
+      </p>
+    </div>
+  </section>
+
+  <h2 class="mt-10 font-display text-3xl">دوره‌های {instructor.data.name}</h2>
+  <div class="divide-y divide-line">
+    {courses.map((course) => <CourseRow course={course} showInstructor={false} />)}
+  </div>
+</MainLayout>

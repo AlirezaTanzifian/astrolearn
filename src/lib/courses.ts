@@ -32,3 +32,9 @@ export const toCartItem = (course: Course) => ({
   title: course.data.title,
   price: course.data.price,
 });
+
+/** جستجوی معکوس روی reference: دوره‌هایی که این مدرس تدریس می‌کند */
+export async function getInstructorCourses(instructorId: string) {
+  const courses = await getCourses();
+  return courses.filter((course) => course.data.instructor.id === instructorId);
+}
